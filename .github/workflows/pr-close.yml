@@ -8,7 +8,7 @@ jobs:
   delete-preview:
     runs-on: ubunutu-20.04
     env:
-      PR_PATH: pull/${{ github.event.number }}
+      PR_PATH: pull/${{ github.event.pull_request.number }}
     steps:
       - name: Make Empty Dir 🫙
         run: mkdir pull

@@ -10,7 +10,7 @@ jobs:
   deploy:
     runs-on: ubuntu-20.04
     env:
-      PR_PATH: pull/${{ github.event.number }}
+      PR_PATH: pull/${{ github.event.pull_request.number }}
     steps:
       - name: Comment on PR 💬
         uses: hasura/comment-progress@v2.2.0
@@ -27,6 +27,7 @@ jobs:
         if: github.ref != 'refs/heads/main'
         run: echo "BASE_URL=https://${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
       - name: Build Documentation Site (Main Branch) 📖
+        if: github.ref == 'refs/heads/main'
         run: yarn && yarn build
       - name: Build Documentation Site (PR Preview) 📖
         if: github.ref != 'refs/heads/main'
