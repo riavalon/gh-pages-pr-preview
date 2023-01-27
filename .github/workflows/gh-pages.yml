@@ -1,0 +1,21 @@
+name: github pages
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout 🚧
+        uses: actions/checkout@v2
+      - name: Build Documentation Site 📖
+        run: yarn && yarn build
+      - name: GH Pages Deploy
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          branch: gh-pages
+          folder: out
+          token: ${{ secrets.GITHUB_TOKEN }}
