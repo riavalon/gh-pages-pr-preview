@@ -7,9 +7,9 @@ on:
 jobs:
   delete-preview:
     runs-on: ubuntu-latest
-    env:
-      PR_PATH: pull/${{ github.event.pull_request.number }}
     steps:
+      - name: Checkout 🚧
+        uses: actions/checkout@v2
       - name: Make Empty Dir 🫙
         run: mkdir pull
       - name: Delete Folder 🫰🏼
