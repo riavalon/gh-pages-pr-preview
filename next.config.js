@@ -1,6 +1,7 @@
 const nextra = require('nextra')
 
 const isGithubActions = process.env.GITHUB_ACTIONS || false
+const PrPreviewPath = process.env.PR_PATH || ''
 
 let assetPrefix = '/'
 let basePath = ''
@@ -8,8 +9,13 @@ let basePath = ''
 if (isGithubActions) {
   const repo = process.env.GITHUB_REPOSITORY.replace(/.*?\//, '')
 
-  assetPrefix = `/${ repo }/`
-  basePath = `/${ repo }`
+  if (PrPreviewPath) {
+    assetPrefix = `/${ repo }/${PrPreviewPath}/`
+    basePath = `/${ repo }/${PrPreviewPath}`
+  } else {
+    assetPrefix = `/${ repo }/`
+    basePath = `/${ repo }`
+  }
 }
 
 const withNextra = nextra({

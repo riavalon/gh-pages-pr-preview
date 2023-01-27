@@ -1,0 +1,30 @@
+name: Cleanup PR Preview on PR close
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  delete-preview:
+  runs-on: ubunutu-20.04
+  env:
+    PR_PATH: pull/${{ github.event.number }}
+  steps:
+    - name: Make Empty Dir 🫙
+      run: mkdir pull
+    - name: Delete Folder 🫰🏼
+      uses: JamesIves/github-pages-deploy-action@v4.2.5
+      with:
+        clean: false
+        branch: gh-pages
+        folder: pull
+        target-folder: pull
+        token: ${{ secrets.GITHUB_TOKEN }}
+    - name: Comment on PR 💬
+      uses: hasura/comment-progress@v2.2.0
+      with:
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        repository: ${{ github.repository }}
+        event: ${{ github.event.number }}
+        id: deploy-preview
+        message: "🫰🏼 PR Closed and Preview Build Deleted."

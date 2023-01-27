@@ -4,18 +4,56 @@ on:
   push:
     branches:
       - main
+  pull_request:
 
 jobs:
   deploy:
     runs-on: ubuntu-20.04
+    env:
+      PR_PATH: pull/${{ github.event.number }}
     steps:
+      - name: Comment on PR 💬
+        uses: hasura/comment-progress@v2.2.0
+        if: github.ref != 'refs/heads/main'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: 'Starting deployment of preview... ⏳'
       - name: Checkout 🚧
         uses: actions/checkout@v2
+      - name: Set Base URL for PR Preview ⚙️
+        if: github.ref != 'refs/heads/main'
+        run: echo "BASE_URL=https://${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
       - name: Build Documentation Site 📖
+        env:
+          PR_PATH: ${{ env.PR_PATH }}
         run: yarn && yarn build
-      - name: GH Pages Deploy
+      - name: GH Pages Deploy 🚀
+        if: github.ref == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
+          clean-exclude: pull
           branch: gh-pages
           folder: out
           token: ${{ secrets.GITHUB_TOKEN }}
+      - name: GH Pages Deploy (PR Preview) 🚢
+        if: github.ref != 'refs/heads/main'
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          clean: false
+          branch: gh-pages
+          folder: out
+          target-folder: ${{ env.PR_PATH }}
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Update Comment
+        uses: hasura/comment-progress@v2.2.0
+        if: github.ref != 'refs/heads/main'
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: 'A preview of ${{ github.event.after }} is uploaded and can be viewed here: 🍄 ${{ env.BASE_URL }} 🍄 - changes may take a moment to propogate'
