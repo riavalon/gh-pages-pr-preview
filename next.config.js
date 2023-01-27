@@ -1,7 +1,7 @@
 const nextra = require('nextra')
 
 const isGithubActions = process.env.GITHUB_ACTIONS || false
-const PrPreviewPath = process.env.PR_PATH || ''
+const PrPreviewPath = process.env.PR_URI || ''
 
 let assetPrefix = '/'
 let basePath = ''

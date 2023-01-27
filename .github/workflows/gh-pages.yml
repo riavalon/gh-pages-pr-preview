@@ -26,9 +26,11 @@ jobs:
       - name: Set Base URL for PR Preview ⚙️
         if: github.ref != 'refs/heads/main'
         run: echo "BASE_URL=https://${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
-      - name: Build Documentation Site 📖
+      - name: Build Documentation Site (Main Branch) 📖
+        run: yarn && yarn build
+      - name: Build Documentation Site (PR Preview) 📖
         env:
-          PR_PATH: ${{ env.PR_PATH }}
+          PR_URI: ${{ env.PR_PATH }}
         run: yarn && yarn build
       - name: GH Pages Deploy 🚀
         if: github.ref == 'refs/heads/main'
