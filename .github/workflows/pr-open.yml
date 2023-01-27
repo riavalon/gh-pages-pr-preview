@@ -18,8 +18,8 @@ jobs:
         uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
           number: ${{ github.event.number }}
+          repository: ${{ github.repository }}
           id: deploy-preview
           message: 'Deploying preview of documentation site... ⏳'
       - name: Set Base URL 🔨
