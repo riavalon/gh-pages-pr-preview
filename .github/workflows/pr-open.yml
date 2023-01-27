@@ -1,6 +1,9 @@
 name: Deploy PR Preview
 
 on:
+  push:
+    branches-ignore:
+      - main
   pull_request:
     types: [opened, edited]
 
@@ -14,6 +17,7 @@ jobs:
       - name: Checkout 🚧
         uses: actions/checkout@v2
       - name: Comment on PR 💬
+        if: github.ref == 'refs/pulls/${{ github.event.pull_request.number }}'
         uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
@@ -22,10 +26,12 @@ jobs:
           id: deploy-preview
           message: 'Deploying preview of documentation site... ⏳'
       - name: Set Base URL 🔨
+        if: github.ref == 'refs/pulls/${{ github.event.pull_request.number }}'
         run: echo BASE_URL="https://riavalon.github.io/${{ github.event.repository.name }}/${{ env.PR_PATH }}" >> $GITHUB_ENV
       - name: Build Docs Site Preview 📖
         run: yarn && yarn build
       - name: Intiate GH Pages Deploy for Preview 🚀
+        if: github.ref == 'refs/pulls/${{ github.event.pull_request.number }}'
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
           clean: false
@@ -34,6 +40,7 @@ jobs:
           folder: out
           target-folder: ${{ env.PR_PATH }}
       - name: Update Comment on PR 💬
+        if: github.ref == 'refs/pulls/${{ github.event.pull_request.number }}'
         uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
