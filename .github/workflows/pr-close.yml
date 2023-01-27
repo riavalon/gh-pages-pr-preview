@@ -11,7 +11,9 @@ jobs:
       - name: Checkout 🚧
         uses: actions/checkout@v2
       - name: Make Empty Dir 🫙
-        run: mkdir pull
+        run: |
+          mkdir pull
+          touch pull/.gitkeep
       - name: Delete Folder 🫰🏼
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
