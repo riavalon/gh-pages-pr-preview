@@ -6,7 +6,7 @@ on:
 
 jobs:
   delete-preview:
-    runs-on: ubunutu-20.04
+    runs-on: ubuntu-latest
     env:
       PR_PATH: pull/${{ github.event.pull_request.number }}
     steps:
