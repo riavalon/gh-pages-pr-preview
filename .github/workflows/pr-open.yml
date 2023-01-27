@@ -1,0 +1,44 @@
+name: Deploy PR Preview
+
+on:
+  push:
+  pull_request:
+    types: [opened, edited]
+
+jobs:
+  deploy-preview:
+    runs-on: ubuntu-latest
+    if: github.ref != 'refs/heads/main' && github.ref == 'refs/pulls/${{ github.event.pull_request.number }}'
+    env:
+      PR_PATH: pull/${{ github.event.pull_request.number }}
+    steps:
+      - name: Comment on PR 💬
+        uses: hasura/comment-progress@v2.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: 'A preview of ${{ github.event.after }} is uploaded and can be viewed here: 🍄 ${{ env.BASE_URL }} 🍄 - changes may take a moment to propogate'
+      - name: Checkout 🚧
+        uses: actions/checkout@v2
+      - name: Set Base URL 🔨
+        run: echo BASE_URL="https://riavalon.github.io/${{ github.event.repository.name }}/${{ env.PR_PATH }}" >> $GITHUB_ENV
+      - name: Build Docs Site Preview 📖
+        run: yarn && yarn build
+      - name: Intiate GH Pages Deploy for Preview 🚀
+        uses: JamesIves/github-pages-deploy-action@v4.2.5
+        with:
+          clean: false
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: gh-pages
+          folder: out
+          target-folder: ${{ env.PR_PATH }}
+      - name: Update Comment on PR 💬
+        uses: hasura/comment-progress@v2.2.0
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          repository: ${{ github.repository }}
+          number: ${{ github.event.number }}
+          id: deploy-preview
+          message: 'A preview of ${{ github.event.after }} is uploaded and can be viewed here:\n🍄 ${{ env.BASE_URL }} 🍄\nPlease note that changes may take a moment to propogate'
