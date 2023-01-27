@@ -12,6 +12,8 @@ jobs:
     env:
       PR_PATH: pull/${{ github.event.pull_request.number }}
     steps:
+      - name: Checkout 🚧
+        uses: actions/checkout@v2
       - name: Comment on PR 💬
         uses: hasura/comment-progress@v2.2.0
         with:
@@ -20,8 +22,6 @@ jobs:
           number: ${{ github.event.number }}
           id: deploy-preview
           message: 'Deploying preview of documentation site... ⏳'
-      - name: Checkout 🚧
-        uses: actions/checkout@v2
       - name: Set Base URL 🔨
         run: echo BASE_URL="https://riavalon.github.io/${{ github.event.repository.name }}/${{ env.PR_PATH }}" >> $GITHUB_ENV
       - name: Build Docs Site Preview 📖
