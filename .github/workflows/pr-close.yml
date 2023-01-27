@@ -25,6 +25,6 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
-          event: ${{ github.event.number }}
+          number: ${{ github.event.number }}
           id: deploy-preview
           message: "🫰🏼 PR Closed and Preview Build Deleted."
