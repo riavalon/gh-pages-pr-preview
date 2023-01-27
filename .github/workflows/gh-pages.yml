@@ -25,7 +25,7 @@ jobs:
         uses: actions/checkout@v2
       - name: Set Base URL for PR Preview ⚙️
         if: github.ref != 'refs/heads/main'
-        run: echo "BASE_URL=https://${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
+        run: echo "BASE_URL=https://riavalon.github.io${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
       - name: Build Documentation Site (Main Branch) 📖
         if: github.ref == 'refs/heads/main'
         run: yarn && yarn build

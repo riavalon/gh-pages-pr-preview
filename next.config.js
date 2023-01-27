@@ -10,9 +10,8 @@ if (isGithubActions) {
   const repo = process.env.GITHUB_REPOSITORY.replace(/.*?\//, '')
 
   if (PrPreviewPath) {
-    const path = PrPreviewPath.slice(0, PrPreviewPath.length-1)
-    assetPrefix = `/${ repo }/${path}/`
-    basePath = `/${ repo }/${path}`
+    assetPrefix = `/${ repo }/${PrPreviewPath}/`
+    basePath = `/${ repo }/${PrPreviewPath}`
   } else {
     assetPrefix = `/${ repo }/`
     basePath = `/${ repo }`
