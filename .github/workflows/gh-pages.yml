@@ -14,7 +14,7 @@ jobs:
     steps:
       - name: Comment on PR 💬
         uses: hasura/comment-progress@v2.2.0
-        if: github.ref != 'refs/heads/main'
+        if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
@@ -26,16 +26,22 @@ jobs:
       - name: Set Base URL for PR Preview ⚙️
         if: github.ref != 'refs/heads/main'
         run: echo "BASE_URL=https://riavalon.github.io${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
+      - name: Cache Assets 💾
+        uses: actions/cache@v3
+        id: cache
+        with:
+          path: out
+          key: ${{ runner.os }}-${{ hashFiles('pages', 'next.config.js', 'theme.config.js') }}
       - name: Build Documentation Site (Main Branch) 📖
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
         run: yarn && yarn build
       - name: Build Documentation Site (PR Preview) 📖
-        if: github.ref != 'refs/heads/main'
+        if: github.ref != 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
         env:
           PR_URI: ${{ env.PR_PATH }}
         run: yarn && yarn build
       - name: GH Pages Deploy 🚀
-        if: github.ref == 'refs/heads/main'
+        if: ${{ github.ref == 'refs/heads/main' && !env.ACT }}
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
           clean-exclude: pull
@@ -43,7 +49,7 @@ jobs:
           folder: out
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: GH Pages Deploy (PR Preview) 🚢
-        if: github.ref != 'refs/heads/main'
+        if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
           clean: false
@@ -54,7 +60,7 @@ jobs:
 
       - name: Update Comment
         uses: hasura/comment-progress@v2.2.0
-        if: github.ref != 'refs/heads/main'
+        if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           repository: ${{ github.repository }}
