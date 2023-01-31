@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - main
-    pull_request:
+  pull_request:
 
 jobs:
   build-and-deploy:
@@ -25,7 +25,7 @@ jobs:
         uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.event.repository }}
+          repository: ${{ github.repository }}
           number: ${{ github.event.number }}
           id: deploy-preview
           message: "Initializing deploy of documentation site preview... ⏳"
@@ -64,7 +64,7 @@ jobs:
         uses: hasura/comment-progress@v2.2.0
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.event.repository }}
+          repository: ${{ github.repository }}
           number: ${{ github.event.number }}
           id: deploy-preview
           message: "🚀 Deploy of docs site preview has been started.  It will take a minute or two for changes to appear on the site.  See changes here: ${{ env.BASE_URL }}"
