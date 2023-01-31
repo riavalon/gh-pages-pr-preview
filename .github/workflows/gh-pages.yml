@@ -41,7 +41,7 @@ jobs:
           path: src/docs/out
       - name: Build Docs Site 📖
         if: steps.cache.outputs.cache-hit != 'true'
-        run: yarn docs-build
+        run: yarn && yarn build
       - name: Deploy (main branch) 🚀
         if: github.refs == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.2.5
