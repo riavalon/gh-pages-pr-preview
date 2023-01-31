@@ -8,19 +8,18 @@ jobs:
   delete-preview:
     runs-on: ubuntu-latest
     env:
-      PR_PATH: pull/${{ github.event.pull_request.number }}
+      PR_NUM: ${{ github.event.pull_request.number }}
     steps:
       - name: Checkout 🚧
         uses: actions/checkout@v2
       - name: Make Empty Dir 🫙
-        run: |
-          mkdir pull
+        run: mkdir pull
       - name: Delete Folder 🫰🏼
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: pull
-          destination_dir: ${{ env.PR_PATH }}
+          publish_dir: ${{ env.PR_NUM }}
+          destination_dir: pull/${{ env.PR_NUM }}
       - name: Comment on PR 💬
         uses: hasura/comment-progress@v2.2.0
         with:

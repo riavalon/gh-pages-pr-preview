@@ -1,69 +1,141 @@
-name: github pages
+name: Build and Deploy
 
 on:
   push:
     branches:
       - main
-  pull_request:
+    pull_request:
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
     env:
-      PR_PATH: pull/${{ github.event.pull_request.number }}
+      PR_NUM: ${{ github.event.pull_request.number }}
     steps:
+      - name: Checkout 🛎️
+        uses: actions/checkout@v2
+      - name: Install Yarn 🚧
+        if: ${{ env.ACT }}
+        run: npm install -g yarn
+      - name: Install Rsync 📚
+        if: ${{ env.ACT }}
+        run: apt-get update && apt-get install -y rsync
       - name: Comment on PR 💬
+        if: github.refs == 'refs/heads/main'
         uses: hasura/comment-progress@v2.2.0
-        if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
+          repository: ${{ github.event.repository }}
           number: ${{ github.event.number }}
           id: deploy-preview
-          message: 'Starting deployment of preview... ⏳'
-      - name: Checkout 🚧
-        uses: actions/checkout@v2
-      - name: Set Base URL for PR Preview ⚙️
-        if: github.ref != 'refs/heads/main'
-        run: echo "BASE_URL=https://riavalon.github.io${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
-      - name: Cache Assets 💾
+          message: "Initializing deploy of documentation site preview... ⏳"
+      - name: Set BASE_URL for Preview Build 🔨
+        if: github.refs != 'refs/heads/main'
+        run: echo BASE_URL="https://rangle.github.io/radius-tracker/pull/${{ env.PR_NUM }}" >> $GITHUB_ENV
+      - name: Cache build artifacts 💾
+        if: github.refs == 'refs/heads/main'
         uses: actions/cache@v3
         id: cache
         with:
-          path: out
-          key: ${{ runner.os }}-${{ hashFiles('pages', 'next.config.js', 'theme.config.js') }}
-      - name: Build Documentation Site (Main Branch) 📖
-        if: github.ref == 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
-        run: yarn && yarn build
-      - name: Build Documentation Site (PR Preview) 📖
-        if: github.ref != 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
-        env:
-          PR_URI: ${{ env.PR_PATH }}
-        run: yarn && yarn build
-      - name: GH Pages Deploy 🚀
-        if: ${{ github.ref == 'refs/heads/main' && !env.ACT }}
+          key: ${{ runner.os }}-${{ hashFiles('src/docs/pages', 'src/docs/next.config.js', 'src/docs/theme.config.jsx') }}
+          path: src/docs/out
+      - name: Build Docs Site 📖
+        if: steps.cache.outputs.cache-hit != 'true'
+        run: yarn docs-build
+      - name: Deploy (main branch) 🚀
+        if: github.refs == 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
           clean-exclude: pull
           branch: gh-pages
-          folder: out
-          token: ${{ secrets.GITHUB_TOKEN }}
-      - name: GH Pages Deploy (PR Preview) 🚢
-        if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
+          folder: src/docs/out
+          token: ${{secrets.GITHUB_TOKEN}}
+      - name: Deploy (PR Preview) 🔎
+        if: github.refs != 'refs/heads/main'
         uses: JamesIves/github-pages-deploy-action@v4.2.5
         with:
-          clean: false
           branch: gh-pages
-          folder: out
-          target-folder: ${{ env.PR_PATH }}
+          folder: src/docs/out
+          target-folder: pull/${{ env.PR_NUM }}
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Update Comment
+          clean: false
+      - name: Update PR comment 💬
+        if: github.refs == 'refs/heads/main'
         uses: hasura/comment-progress@v2.2.0
-        if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          repository: ${{ github.repository }}
+          repository: ${{ github.event.repository }}
           number: ${{ github.event.number }}
           id: deploy-preview
-          message: 'A preview of ${{ github.event.after }} is uploaded and can be viewed here: 🍄 ${{ env.BASE_URL }} 🍄 - changes may take a moment to propogate'
+          message: "🚀 Deploy of docs site preview has been started.  It will take a minute or two for changes to appear on the site.  See changes here: ${{ env.BASE_URL }}"
+
+
+# name: github pages
+
+# on:
+#   push:
+#     branches:
+#       - main
+#   pull_request:
+
+# jobs:
+#   deploy:
+#     runs-on: ubuntu-latest
+#     env:
+#       PR_PATH: pull/${{ github.event.pull_request.number }}
+#     steps:
+#       - name: Comment on PR 💬
+#         uses: hasura/comment-progress@v2.2.0
+#         if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
+#         with:
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           repository: ${{ github.repository }}
+#           number: ${{ github.event.number }}
+#           id: deploy-preview
+#           message: 'Starting deployment of preview... ⏳'
+#       - name: Checkout 🚧
+#         uses: actions/checkout@v2
+#       - name: Set Base URL for PR Preview ⚙️
+#         if: github.ref != 'refs/heads/main'
+#         run: echo "BASE_URL=https://riavalon.github.io${{ env.DOMAIN }}/${{ github.event.repository.name }}/${{ env.PR_PATH }}/" >> $GITHUB_ENV
+#       - name: Cache Assets 💾
+#         uses: actions/cache@v3
+#         id: cache
+#         with:
+#           path: out
+#           key: ${{ runner.os }}-${{ hashFiles('pages', 'next.config.js', 'theme.config.js') }}
+#       - name: Build Documentation Site (Main Branch) 📖
+#         if: github.ref == 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
+#         run: yarn && yarn build
+#       - name: Build Documentation Site (PR Preview) 📖
+#         if: github.ref != 'refs/heads/main' && steps.cache.outputs.cache-hit != 'true'
+#         env:
+#           PR_URI: ${{ env.PR_PATH }}
+#         run: yarn && yarn build
+#       - name: GH Pages Deploy 🚀
+#         if: ${{ github.ref == 'refs/heads/main' && !env.ACT }}
+#         uses: JamesIves/github-pages-deploy-action@v4.2.5
+#         with:
+#           clean-exclude: pull
+#           branch: gh-pages
+#           folder: out
+#           token: ${{ secrets.GITHUB_TOKEN }}
+#       - name: GH Pages Deploy (PR Preview) 🚢
+#         if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
+#         uses: JamesIves/github-pages-deploy-action@v4.2.5
+#         with:
+#           clean: false
+#           branch: gh-pages
+#           folder: out
+#           target-folder: ${{ env.PR_PATH }}
+#           token: ${{ secrets.GITHUB_TOKEN }}
+
+#       - name: Update Comment
+#         uses: hasura/comment-progress@v2.2.0
+#         if: ${{ github.ref != 'refs/heads/main' && !env.ACT }}
+#         with:
+#           github-token: ${{ secrets.GITHUB_TOKEN }}
+#           repository: ${{ github.repository }}
+#           number: ${{ github.event.number }}
+#           id: deploy-preview
+#           message: 'A preview of ${{ github.event.after }} is uploaded and can be viewed here: 🍄 ${{ env.BASE_URL }} 🍄 - changes may take a moment to propogate'
